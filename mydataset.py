@@ -1,3 +1,5 @@
+# File for dataset loading. Inherent from pytorch Dataset class.
+
 import torch
 from torch.utils.data import Dataset, DataLoader
 import os

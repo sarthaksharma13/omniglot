@@ -13,6 +13,11 @@ import time
 import numpy as np
 
 
+import args
+# Parse commandline arguements
+cmd = args.arguments;
+
+# Check if cuda is available for GPU usage.
 cuda = torch.cuda.is_available()
 
 
@@ -21,7 +26,7 @@ data_transforms = transforms.Compose([
     transforms.ToTensor()
 ])
 
-
+# Assuming you have run make_dataset.py as specified.
 train_path = 'background'
 test_path = 'evaluation'
 train_dataset = dset.ImageFolder(root=train_path)
@@ -34,58 +39,65 @@ dataSet = OmniglotTrain(train_dataset, transform=data_transforms)
 testSet = OmniglotTest(test_dataset, transform=transforms.ToTensor(), times = times, way = way)
 testLoader = DataLoader(testSet, batch_size=way, shuffle=False, num_workers=16)
 
-dataLoader = DataLoader(dataSet, batch_size=128,\
+dataLoader = DataLoader(dataSet, batch_size=cmd.trainBatch,\
                         shuffle=False, num_workers=16)
 
 
-def show_data_batch(sample_batched):
-    image_batch = sample_batched[0][0]
-    grid = torchvision.utils.make_grid(sample_batched)
-    plt.figure()
-    plt.imshow(grid.numpy().transpose((1, 2, 0)))
-    plt.title('Batch from dataloader')
-    plt.axis('off')
-    plt.show()
 
 
-#  def loss_fn(label, output):
-    #  return -torch.mean(label * torch.log(output) + (1.0-label) * torch.log(1.0-output))
-loss_fn = torch.nn.BCEWithLogitsLoss(size_average=True)
-
-
-learning_rate = 0.00006
-
-
+# Get the network architecture
 net = Siamese()
+# Loss criterion
+criterion = torch.nn.BCEWithLogitsLoss(size_average=True)
 
+# Optimizer
+if cmd.optMethod == 'adam':
+    optimizer = torch.optim.Adam(net.parameters(),lr = cmd.lr )
+
+# To store train loss
 train_loss = []
+# Get the network in training mode.
 net.train()
-optimizer = torch.optim.Adam(net.parameters(),lr = learning_rate )
-optimizer.zero_grad()
+
+# Use GPUs.
 if cuda:
     net.cuda()
 
+# Parameters to show, save and test
 show_every = 10
 save_every = 100
 test_every = 100
-train_loss = []
+
+# Track the loss
 loss_val = 0
-max_iter = 90000
+
 
 for batch_id, (img1, img2, label) in enumerate(dataLoader, 1):
-    if batch_id > max_iter:
+    # Max iters 
+    if batch_id > cmd.iters:
         break
+    # Start time
     batch_start = time.time()
+
+    # If GPU, convert to cuda tensor
     if cuda:
         img1, img2, label = Variable(img1.cuda()), Variable(img2.cuda()), Variable(label.cuda())
     else:
         img1, img2, label = Variable(img1), Variable(img2), Variable(label)
+
+    # Zero gradient parameters from previous batch
     optimizer.zero_grad()
+    # Forward the image
     output = net.forward(img1, img2)
-    loss = loss_fn(output, label)
+    # Compute the loss
+    loss = criterion(output, label)
+
     loss_val += loss.data[0]
+    # Backprop
     loss.backward()
+    # Take the optimizer step
     optimizer.step()
+    # For saving, displaying and testing.
     if batch_id % show_every == 0 :
         print('[%d]\tloss:\t%.5f\tTook\t%.2f s'%(batch_id, loss_val/show_every, (time.time() - batch_start)*show_every))
         loss_val = 0
@@ -105,8 +117,9 @@ for batch_id, (img1, img2, label) in enumerate(dataLoader, 1):
         print('*'*70)
         print('[%d]\tright:\t%d\terror:\t%d\tprecision:\t%f'%(batch_id, right, error, right*1.0/(right+error)))
         print('*'*70)
+
     train_loss.append(loss_val)
-#  learning_rate = learning_rate * 0.95
+
 
 with open('train_loss', 'wb') as f:
     pickle.dump(train_loss, f)

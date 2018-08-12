@@ -1,3 +1,5 @@
+# Model definition goes here.
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -23,6 +25,7 @@ class Siamese(nn.Module):
         self.liner = nn.Sequential(nn.Linear(9216, 4096), nn.Sigmoid())
         self.out = nn.Linear(4096, 1)
 
+    #Forward function
     def forward_one(self, x):
         x = self.conv(x)
         x = x.view(x.size()[0], -1)
@@ -41,5 +44,6 @@ class Siamese(nn.Module):
 # for test
 if __name__ == '__main__':
     net = Siamese()
+    # Print the network and its parameters.
     print(net)
     print(list(net.parameters()))

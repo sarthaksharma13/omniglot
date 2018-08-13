@@ -103,8 +103,8 @@ for batch_id, (img1, img2, label) in enumerate(dataLoader, 1):
     if batch_id % show_every == 0 :
         print('[%d]\tloss:\t%.5f\tTook\t%.2f s'%(batch_id, loss_val/show_every, (time.time() - batch_start)*show_every))
         loss_val = 0
-    #if batch_id % save_every == 0:
-        #torch.save(net.state_dict(), './model/model-batch-%d.pth'%(batch_id+1,))
+    if batch_id % save_every == 0:
+        torch.save(net.state_dict(), './model/model-batch-%d.pth'%(batch_id+1,))
     if batch_id % test_every == 0:
         right, error = 0, 0
         for _, (test1, test2) in enumerate(testLoader, 1):

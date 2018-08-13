@@ -56,6 +56,8 @@ if cmd.optMethod == 'adam':
 
 # To store train loss
 train_loss = []
+# To store the accuracy
+accuracy = []
 # Get the network in training mode.
 net.train()
 
@@ -101,8 +103,8 @@ for batch_id, (img1, img2, label) in enumerate(dataLoader, 1):
     if batch_id % show_every == 0 :
         print('[%d]\tloss:\t%.5f\tTook\t%.2f s'%(batch_id, loss_val/show_every, (time.time() - batch_start)*show_every))
         loss_val = 0
-    if batch_id % save_every == 0:
-        torch.save(net.state_dict(), './model/model-batch-%d.pth'%(batch_id+1,))
+    #if batch_id % save_every == 0:
+        #torch.save(net.state_dict(), './model/model-batch-%d.pth'%(batch_id+1,))
     if batch_id % test_every == 0:
         right, error = 0, 0
         for _, (test1, test2) in enumerate(testLoader, 1):
@@ -117,9 +119,25 @@ for batch_id, (img1, img2, label) in enumerate(dataLoader, 1):
         print('*'*70)
         print('[%d]\tright:\t%d\terror:\t%d\tprecision:\t%f'%(batch_id, right, error, right*1.0/(right+error)))
         print('*'*70)
+        accuracy.append(right*100.0/(right+error))
 
     train_loss.append(loss_val)
 
 
 with open('train_loss', 'wb') as f:
     pickle.dump(train_loss, f)
+
+
+fig, ax = plt.subplots(1)
+ax.plot(range(len(train_loss)), train_loss, 'r', label = 'loss')
+ax.legend()
+plt.ylabel('Loss')
+plt.xlabel('Batch #')
+fig.savefig(os.path.join('./loss_val'))
+
+fig, ax = plt.subplots(1)
+ax.plot(range(len(accuracy)), accuracy, 'b', label = 'loss')
+ax.legend()
+plt.ylabel('Accuracy ')
+plt.xlabel('Batch #')
+fig.savefig(os.path.join('./accuracy'))

@@ -1,0 +1,35 @@
+###############################################
+	Siamese Networks for One-Shot Learning
+###############################################
+
+
+
+*** Problem Statement : One shot learning demonstrated on omniglot dataset.
+
+*** Problem Description : 
+
+The process of learning essential features for machine learning applications can be very computationally expensive and may prove difficult in
+cases where very less data is available. A prototypical example of this is the one-shot learning setting, in which we must correctly make predictions given only a single example of each new class. The task is classification under the restriction that we may only observe a single example of each possible class before making a prediction about a test instance.
+
+
+*** Dataset :
+The dataset used for this problem is Omniglot dataset. The dataset has 1623 character classes, each with 20 examples. Using background set of 30 alphabets for training and then evaluate on set of 20 alphabets. 
+
+
+*** Problem analysis and solution :
+The motivation of the methodology came from [1], where the authors present a novel approach which limits assumptions on the structure of the inputs while automatically acquiring features which enable the model to generalize success fully from few examples. The approach is build upon a deep learning framework 
+which has a lot of non-linearitues, to become invariant to transformations in the input space. The image representations are learned via a supervised metric based approach with siamese neural networks, then reuse that network’s features for one-shot learning without any retraining. Siamese networks are a special type of neural network architecture. Instead of a model learning to classify its inputs, the neural networks learns to differentiate between two inputs. It learns the similarity between them. A Siamese networks consists of two identical neural networks, each taking one of the two input images. The last layers of the two networks are then fed to a contrastive loss function , which calculates the similarity between the two images. There are two sister networks, which are identical neural networks, with the exact same weights. Each image in the image pair is fed to one of these networks. The networks are optimised using a contrastive loss, which speaking crudely learns to distinguish different pairs.
+
+
+*** Experiments and Resuls :
+
+The network was trained using ADAM optimizer, with a learning rate of the order 1e-5, for 90K iterations. Accuracy of 89% can be acheived, as opposed to 
+93% by[1], using 150K iterations.
+Different weight initialization schemes, a grid search over parameters can also be performed to improve the results.
+
+
+
+
+*** References :
+
+[1] https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf
